@@ -1,0 +1,5 @@
+# Node.js (frontend) 
+front-hopital/node_modules/ 
+back-hopital/__pycache__/ 
+*.pyc 
+.env 
