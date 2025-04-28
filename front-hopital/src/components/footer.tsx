@@ -1,8 +1,11 @@
 export default function Footer() {
-    return (
-      <footer className="bg-gray-100 text-gray-600 text-center py-3 border-t">
-        <p>&copy; {new Date().getFullYear()} Hôpital Santé+ - Tous droits réservés</p>
-      </footer>
-    )
-  }
-  
+  return (
+    <footer
+    className="h-40 bg-gray-800 text-white flex flex-col items-center justify-center"
+  >
+    <h3 className="text-xl font-semibold">Contactez-nous</h3>
+    <p>Email : contact@santeplus.com</p>
+    <p>© {new Date().getFullYear()} Santé+</p>
+  </footer>
+  )
+}

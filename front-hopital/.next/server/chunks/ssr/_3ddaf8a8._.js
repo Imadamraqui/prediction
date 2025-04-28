@@ -152,12 +152,12 @@ function Header() {
         }, void 0, false, {
             fileName: "[project]/src/components/header.tsx",
             lineNumber: 4,
-            columnNumber: 9
+            columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/header.tsx",
         lineNumber: 3,
-        columnNumber: 7
+        columnNumber: 5
     }, this);
 }
 }}),
@@ -183,12 +183,12 @@ function Footer() {
         }, void 0, true, {
             fileName: "[project]/src/components/footer.tsx",
             lineNumber: 4,
-            columnNumber: 9
+            columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/footer.tsx",
         lineNumber: 3,
-        columnNumber: 7
+        columnNumber: 5
     }, this);
 }
 }}),

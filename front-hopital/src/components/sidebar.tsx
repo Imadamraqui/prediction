@@ -1,33 +1,32 @@
-export default function sidebar() { 
+'use client'
+
+import { X } from 'lucide-react'
+
+interface SidebarProps {
+  isOpen: boolean
+  toggleSidebar: () => void
+}
+
+export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
   return (
-    <div className="w-64 bg-gray-800 text-white h-screen flex flex-col">
-      <div className="flex items-center justify-center h-16 bg-gray-900">
-        <h1 className="text-xl font-bold">Hôpital</h1>
+    <aside
+      className={`h-screen w-64 bg-blue-800 text-white p-4 shadow transition-transform duration-300 ease-in-out
+      fixed top-0 left-0 z-50
+      ${isOpen ? 'translate-x-0' : '-translate-x-64'}`}
+    >
+      {/* 🔁 Bouton de fermeture dans le coin */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">Menu</h2>
+        <button onClick={toggleSidebar} className="text-white hover:text-blue-300">
+          <X size={24} />
+        </button>
       </div>
-      <nav className="flex-1 p-4">
-        <ul>
-          <li className="mb-2">
-            <a href="#" className="block p-2 hover:bg-gray-700 rounded">
-              Dashboard
-            </a>
-          </li>
-          <li className="mb-2">
-            <a href="#" className="block p-2 hover:bg-gray-700 rounded">
-              Patients
-            </a>
-          </li>
-          <li className="mb-2">
-            <a href="#" className="block p-2 hover:bg-gray-700 rounded">
-              Médecins
-            </a>
-          </li>
-          <li className="mb-2">
-            <a href="#" className="block p-2 hover:bg-gray-700 rounded">
-              Rendez-vous
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </div>
+
+      <ul className="space-y-4">
+        <li className="hover:text-blue-200 cursor-pointer">Dashboard</li>
+        <li className="hover:text-blue-200 cursor-pointer">Rendez-vous</li>
+        <li className="hover:text-blue-200 cursor-pointer">Profil</li>
+      </ul>
+    </aside>
   )
 }
