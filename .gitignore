@@ -1,5 +1,26 @@
-# Node.js (frontend) 
-front-hopital/node_modules/ 
-back-hopital/__pycache__/ 
-*.pyc 
-.env 
+# Ignore virtual environments
+back-hopital/venv/
+front-hopital/venv/
+
+# Ignore Node.js dependencies
+front-hopital/node_modules/
+
+# Ignore Next.js build output
+front-hopital/.next/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+*.env
+
+# VSCode settings
+.vscode/
+
+# System files
+.DS_Store
+Thumbs.db
