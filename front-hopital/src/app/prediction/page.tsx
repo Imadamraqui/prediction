@@ -18,7 +18,7 @@ export default function PredictionPage() {
 
   const handleSubmit = async () => {
     if (!file) return
-
+ 
     const formData = new FormData()
     formData.append('file', file)
 

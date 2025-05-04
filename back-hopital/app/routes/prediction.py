@@ -39,7 +39,9 @@ recommendations = {
     ]
 }
 
-@prediction_bp.route('/', methods=['POST'])
+@prediction_bp.route('/ping', methods=['POST'])
+def ping():
+    return jsonify({"message": "pong"})
 def predict():
     if 'file' not in request.files:
         return jsonify({'error': 'Aucun fichier envoyé.'}), 400

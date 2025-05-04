@@ -7,6 +7,6 @@ def get_db_connection():
         host="localhost",
         user="root",
         password="",  # Remplacer par ton mot de passe si nécessaire
-        database="Hopital",
+        database="hopital",
         cursorclass=pymysql.cursors.Cursor  # Tu peux aussi utiliser DictCursor
     )
