@@ -21,6 +21,7 @@ export default function LoginPage() {
       if (response.ok) {
         console.log("✅ Connexion établie avec succès !");
         console.log(data); // Token, message, etc.
+        localStorage.setItem('token', data.token);
         setMessage('✅ Connexion réussie !');
         // TODO : rediriger vers /dashboard ou sauvegarder le token localStorage
       } else {
