@@ -8,10 +8,36 @@ import { Button } from '@/components/ui/button';
 
 export default function HomePage() {
   const [isConnected, setIsConnected] = useState(false);
+  const [medecins, setMedecins] = useState([]);
+  const [departements, setDepartements] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsConnected(!!token);
+  }, []);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/medecins")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Médecins chargés :", data);
+        setMedecins(data);
+      })
+      .catch((error) => {
+        console.error("Erreur lors du chargement des médecins :", error);
+      });
+  }, []);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/departements")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Départements chargés :", data);
+        setDepartements(data);
+      })
+      .catch((error) => {
+        console.error("Erreur lors du chargement des départements :", error);
+      });
   }, []);
 
   const handleLogout = () => {
@@ -55,33 +81,64 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 🔸 Section Médecins */}
-      <section id="medecins" className="min-h-screen bg-blue-50 flex flex-col items-center justify-center py-20">
-        <h2 className="text-4xl font-bold text-blue-900 mb-12">👩‍⚕️ Médecins disponibles</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {[1, 2, 3].map((_, i) => (
-            <Card key={i} className="w-64 text-center">
-              <CardHeader>
-                <CardTitle>Dr. Amina Rami</CardTitle>
-                <p className="text-sm text-gray-500">Cardiologue</p>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full">Voir profil</Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
+     {/* 🔸 Section Médecins */}
+<section
+  id="medecins"
+  className="min-h-screen bg-blue-50 flex flex-col items-center justify-center py-20"
+>
+  <h2 className="text-4xl font-bold text-blue-900 mb-12">👩‍⚕️ Médecins disponibles</h2>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+    {medecins.length > 0 ? (
+      medecins.map((medecin: any) => (
+        <Card
+          key={medecin.id}
+          className="w-72 shadow-md rounded-2xl hover:shadow-xl transition-all"
+        >
+          <CardHeader className="flex flex-col items-center pt-6">
+            <Image
+              src={medecin.photo_url}
+              alt={`Photo de ${medecin.nom}`}
+              width={96}
+              height={96}
+              className="rounded-full border-4 border-white shadow mb-4"
+            />
+            <CardTitle className="text-lg font-semibold text-blue-800">
+              {medecin.nom}
+            </CardTitle>
+            <p className="text-sm text-gray-500">{medecin.grade}</p>
+          </CardHeader>
+
+          
+            <Button
+              className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-xl"
+              onClick={() => window.location.href = `/medecins/${medecin.id}`}
+            >
+              Voir profil
+            </Button>
+          
+        </Card>
+      ))
+    ) : (
+      <p>Aucun médecin disponible.</p>
+    )}
+  </div>
+</section>
+
 
       {/* 🔸 Section Départements */}
       <section id="departements" className="min-h-screen bg-green-50 flex flex-col items-center justify-center py-20">
         <h2 className="text-4xl font-bold text-green-900 mb-12">🏥 Départements</h2>
         <div className="flex gap-4 flex-wrap justify-center">
-          {['Cardiologie', 'Pédiatrie', 'Neurologie', 'Oncologie'].map((dep) => (
-            <Badge key={dep} className="text-lg px-6 py-2 rounded-full bg-green-600 text-white">
-              {dep}
-            </Badge>
-          ))}
+          {departements.length > 0 ? (
+            departements.map((departement: any) => (
+              <Badge key={departement.id} className="text-lg px-6 py-2 rounded-full bg-green-600 text-white">
+                {departement.nom_depart} - {departement.classe_pred}
+              </Badge>
+            ))
+          ) : (
+            <p>Aucun département disponible.</p>
+          )}
         </div>
       </section>
 
