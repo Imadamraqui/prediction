@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
+from werkzeug.utils import secure_filename
 import pandas as pd
 import pickle
 import os
 import pdfplumber
-import io
 import numpy as np
-from werkzeug.utils import secure_filename
+import re 
 
 prediction_bp = Blueprint('prediction', __name__, url_prefix='/predict')
 
@@ -78,28 +78,48 @@ def extract_table_from_pdf(pdf_file):
     """Extrait les données tabulaires d'un fichier PDF."""
     try:
         with pdfplumber.open(pdf_file) as pdf:
+            # Vérifier la présence de pages
+            if len(pdf.pages) == 0:
+                raise ValueError("Le PDF ne contient aucune page.")
+
             # Prendre la première page
             first_page = pdf.pages[0]
-            # Extraire les tables
-            tables = first_page.extract_tables()
-            
-            if not tables:
-                raise ValueError("Aucune table trouvée dans le PDF")
-            
-            # Prendre la première table
-            table = tables[0]
-            
-            # Convertir en DataFrame
-            df = pd.DataFrame(table[1:], columns=table[0])
-            
+
+            # Extraire le texte brut
+            raw_text = first_page.extract_text()
+
+            # Vérifier si le texte brut est vide
+            if not raw_text:
+                raise ValueError("Aucun texte trouvé dans le PDF.")
+
+            # Découper le texte en lignes
+            lines = raw_text.split('\n')
+
+            # Extraire la première ligne comme en-tête
+            header = lines[1].split()
+
+            # Extraire la deuxième ligne comme valeurs
+            data_line = lines[2]
+            # Séparer les nombres à l'aide d'un motif regex
+            data = re.findall(r"[\d\.]+", data_line)
+
+            # Vérifier que les colonnes correspondent
+            if len(header) != len(data):
+                raise ValueError(f"Le nombre de colonnes ({len(header)}) ne correspond pas au nombre de valeurs ({len(data)}).")
+
+            # Créer un DataFrame
+            df = pd.DataFrame([data], columns=header)
+
             # Convertir les colonnes numériques
             for col in df.columns:
                 try:
-                    df[col] = pd.to_numeric(df[col])
-                except:
-                    continue
-            
+                    df[col] = pd.to_numeric(df[col], errors='coerce')
+                except Exception as e:
+                    print(f"Impossible de convertir la colonne {col} : {e}")
+
+            print("Extraction de table depuis le PDF réussie.")
             return df
+
     except Exception as e:
         raise Exception(f"Erreur lors de l'extraction du PDF: {str(e)}")
 
@@ -117,9 +137,13 @@ def predict():
         return jsonify({'error': 'Aucun fichier sélectionné'}), 400
 
     try:
-        # Lire le fichier CSV
-        df = pd.read_csv(file)
-        
+        if file.filename.lower().endswith('.pdf'):
+            # Extraire les données depuis le PDF
+            df = extract_table_from_pdf(file)
+        else:
+            # Lire le fichier CSV
+            df = pd.read_csv(file)
+
         # Vérifier les colonnes requises
         required_columns = [
             'Glucose', 'Cholesterol', 'Hemoglobin', 'Platelets',
@@ -141,12 +165,7 @@ def predict():
         
         # Obtenir les recommandations
         recommendations = get_recommendations(prediction_label)
-        
-        # Debug logs
-        print(f"Prédiction brute: {prediction}")
-        print(f"Label décodé: {prediction_label}")
-        print(f"Recommandations: {recommendations}")
-        
+
         return jsonify({
             'prediction': prediction_label,
             'recommendations': recommendations
@@ -155,4 +174,3 @@ def predict():
     except Exception as e:
         print(f"Erreur lors de la prédiction : {str(e)}")
         return jsonify({'error': str(e)}), 500
-
