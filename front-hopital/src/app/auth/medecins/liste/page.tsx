@@ -1,8 +1,9 @@
 'use client';
-import { useEffect, useState } from "react";
+
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import MedecinCard from '@/components/MedecinCard';
+import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
 type Medecin = {
@@ -13,7 +14,7 @@ type Medecin = {
   photo_url: string;
 };
 
-export default function ListeMedecins() {
+export default function ListeCompleteMedecins() {
   const [medecins, setMedecins] = useState<Medecin[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,26 +62,21 @@ export default function ListeMedecins() {
     );
   }
 
-  // Afficher seulement les 3 premiers médecins
-  const medecinsLimites = medecins.slice(0, 3);
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-blue-600">Nos Médecins</h1>
-          <p className="text-gray-600 mt-2">Découvrez notre équipe médicale</p>
-        </div>
+        <h1 className="text-3xl font-bold">Liste Complète des Médecins</h1>
         <Button 
-          onClick={() => router.push('/auth/medecins/liste')}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md"
+          onClick={() => router.push('/auth/medecins')}
+          variant="outline"
+          className="border-blue-600 text-blue-600 hover:bg-blue-50"
         >
-          Voir tous les médecins
+          Retour
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {medecinsLimites.map((medecin) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {medecins.map((medecin) => (
           <MedecinCard 
             key={medecin.id} 
             medecin={{
@@ -94,4 +90,4 @@ export default function ListeMedecins() {
       </div>
     </div>
   );
-}
+} 
