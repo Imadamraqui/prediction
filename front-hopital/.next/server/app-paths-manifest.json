@@ -1,5 +1,10 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
+  "/auth/login/page": "app/auth/login/page.js",
+  "/auth/medecins/liste/page": "app/auth/medecins/liste/page.js",
+  "/auth/medecins/page": "app/auth/medecins/page.js",
+  "/auth/signup/page": "app/auth/signup/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/prediction/page": "app/prediction/page.js"
 }
