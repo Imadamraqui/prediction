@@ -78,46 +78,46 @@ def extract_table_from_pdf(pdf_file):
     """Extrait les données tabulaires d'un fichier PDF."""
     try:
         with pdfplumber.open(pdf_file) as pdf:
-            # Vérifier la présence de pages
-            if len(pdf.pages) == 0:
-                raise ValueError("Le PDF ne contient aucune page.")
-
-            # Prendre la première page
             first_page = pdf.pages[0]
+            tables = first_page.extract_tables()
 
-            # Extraire le texte brut
-            raw_text = first_page.extract_text()
+            if not tables:
+                raise ValueError("Aucune table trouvée dans le PDF")
 
-            # Vérifier si le texte brut est vide
-            if not raw_text:
-                raise ValueError("Aucun texte trouvé dans le PDF.")
+            # Prendre la première table
+            table = tables[0]
 
-            # Découper le texte en lignes
-            lines = raw_text.split('\n')
+            # Vérifier si la table contient bien des colonnes
+            if len(table) < 2:
+                raise ValueError("Tableau non valide dans le PDF")
 
-            # Extraire la première ligne comme en-tête
-            header = lines[1].split()
+            # Créer le DataFrame
+            df = pd.DataFrame(table[1:], columns=table[0])
 
-            # Extraire la deuxième ligne comme valeurs
-            data_line = lines[2]
-            # Séparer les nombres à l'aide d'un motif regex
-            data = re.findall(r"[\d\.]+", data_line)
+            # Vérifier si les colonnes sont bien détectées
+            required_columns = [
+                'Glucose', 'Cholesterol', 'Hemoglobin', 'Platelets',
+                'White Blood Cells', 'Red Blood Cells', 'Hematocrit',
+                'Mean Corpuscular Volume', 'Mean Corpuscular Hemoglobin',
+                'Mean Corpuscular Hemoglobin Concentration', 'Insulin', 'BMI',
+                'Systolic Blood Pressure', 'Diastolic Blood Pressure', 'Triglycerides',
+                'HbA1c', 'LDL Cholesterol', 'HDL Cholesterol', 'ALT', 'AST',
+                'Heart Rate', 'Creatinine', 'Troponin', 'C-reactive Protein'
+            ]
 
-            # Vérifier que les colonnes correspondent
-            if len(header) != len(data):
-                raise ValueError(f"Le nombre de colonnes ({len(header)}) ne correspond pas au nombre de valeurs ({len(data)}).")
+            # Nettoyer les colonnes pour enlever les espaces inutiles
+            df.columns = df.columns.str.strip()
 
-            # Créer un DataFrame
-            df = pd.DataFrame([data], columns=header)
+            # Vérifier les colonnes manquantes
+            missing_columns = [col for col in required_columns if col not in df.columns]
+            if missing_columns:
+                raise ValueError(f"Colonnes manquantes : {', '.join(missing_columns)}")
 
-            # Convertir les colonnes numériques
+            # Conversion des colonnes numériques
             for col in df.columns:
-                try:
-                    df[col] = pd.to_numeric(df[col], errors='coerce')
-                except Exception as e:
-                    print(f"Impossible de convertir la colonne {col} : {e}")
+                df[col] = pd.to_numeric(df[col], errors='coerce')
 
-            print("Extraction de table depuis le PDF réussie.")
+            print("Extraction réussie du PDF.")
             return df
 
     except Exception as e:
