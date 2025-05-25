@@ -2,60 +2,64 @@ from fpdf import FPDF
 import random
 import os
 
-# Génération des données aléatoires pour le PDF de test
-def generate_test_data():
-    data = [
-        ["Glucose", "Cholesterol", "Hemoglobin", "Platelets", "White Blood Cells",
-         "Red Blood Cells", "Hematocrit", "Mean Corpuscular Volume",
-         "Mean Corpuscular Hemoglobin", "Mean Corpuscular Hemoglobin Concentration",
-         "Insulin", "BMI", "Systolic Blood Pressure", "Diastolic Blood Pressure",
-         "Triglycerides", "HbA1c", "LDL Cholesterol", "HDL Cholesterol",
-         "ALT", "AST", "Heart Rate", "Creatinine", "Troponin", "C-reactive Protein"]
-    ]
+# Données générées aléatoirement
+data_map = {
+    "Glucose": round(random.uniform(0.1, 1.0), 6),
+    "Cholesterol": round(random.uniform(0.1, 1.0), 6),
+    "Hemoglobin": round(random.uniform(0.1, 1.0), 6),
+    "Platelets": round(random.uniform(0.1, 1.0), 6),
+    "White Blood Cells": round(random.uniform(0.1, 1.0), 6),
+    "Red Blood Cells": round(random.uniform(0.1, 1.0), 6),
+    "Hematocrit": round(random.uniform(0.1, 1.0), 6),
+    "Mean Corpuscular Volume": round(random.uniform(0.1, 1.0), 6),
+    "Mean Corpuscular Hemoglobin": round(random.uniform(0.1, 1.0), 6),
+    "Mean Corpuscular Hemoglobin Concentration": round(random.uniform(0.1, 1.0), 6),
+    "Insulin": round(random.uniform(0.1, 1.0), 6),
+    "BMI": round(random.uniform(0.1, 1.0), 6),
+    "Systolic Blood Pressure": round(random.uniform(0.1, 1.0), 6),
+    "Diastolic Blood Pressure": round(random.uniform(0.1, 1.0), 6),
+    "Triglycerides": round(random.uniform(0.1, 1.0), 6),
+    "HbA1c": round(random.uniform(0.1, 1.0), 6),
+    "LDL Cholesterol": round(random.uniform(0.1, 1.0), 6),
+    "HDL Cholesterol": round(random.uniform(0.1, 1.0), 6),
+    "ALT": round(random.uniform(0.1, 1.0), 6),
+    "AST": round(random.uniform(0.1, 1.0), 6),
+    "Heart Rate": round(random.uniform(0.1, 1.0), 6),
+    "Creatinine": round(random.uniform(0.1, 1.0), 6),
+    "Troponin": round(random.uniform(0.1, 1.0), 6),
+    "C-reactive Protein": round(random.uniform(0.1, 1.0), 6),
+}
 
-    # Génération d'une ligne de données aléatoires
-    row = [round(random.uniform(0.1, 1.0), 6) for _ in range(24)]
-    data.append(row)
-
-    return data
-
-# Création du PDF structuré en table
 class PDF(FPDF):
     def header(self):
-        self.set_font('Arial', 'B', 12)
-        self.cell(0, 10, 'Données de Santé - Test Prediction', 0, 1, 'C')
+        self.set_font('Arial', 'B', 16)
+        self.cell(0, 10, "Rapport de Prédiction Médicale", ln=1, align='C')
+        logo_path = "app/static/logo.png"
+        if os.path.exists(logo_path):
+            self.image(logo_path, 10, 8, 20)
+        self.set_font('Arial', '', 12)
+        self.cell(0, 10, "Nom: Jean Dupont    |    Date: 2024-05-20", ln=1, align='C')
+        self.ln(8)
 
     def footer(self):
         self.set_y(-15)
         self.set_font('Arial', 'I', 8)
-        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
+        self.cell(0, 10, f'Page {self.page_no()}', align='C')
 
-    def add_table(self, data):
-        self.set_font('Arial', '', 8)
-        col_width = self.w / len(data[0])  # Ajuster la largeur pour l'ensemble du tableau
-        line_height = 10
+    def add_vertical_table(self, data_map):
+        self.set_font('Arial', '', 11)
+        for key, value in data_map.items():
+            label = f"{key:<35}"
+            val_text = f"{value}"
+            self.cell(120, 8, label, ln=0)
+            self.cell(0, 8, val_text, ln=1, align='R')  # align right
 
-        # Ajouter les en-têtes de colonne
-        for col in data[0]:
-            self.cell(col_width, line_height, col, border=1, align='C', fill=True)
-        self.ln()
-
-        # Ajouter les lignes de données
-        for row in data[1:]:
-            for item in row:
-                self.cell(col_width, line_height, str(item), border=1, align='C')
-            self.ln()
-
-# Génération des données
-data = generate_test_data()
-
-# Création du PDF
+# Génération PDF
 pdf = PDF()
 pdf.add_page()
-pdf.add_table(data)
+pdf.add_vertical_table(data_map)
 
-# Enregistrer le PDF
-output_path = "app/test_files/testx.pdf"
+output_path = "app/test_files/test25.pdf"
 os.makedirs(os.path.dirname(output_path), exist_ok=True)
 pdf.output(output_path)
-print(f"PDF généré avec succès : {output_path}")
+print(f"✅ PDF vertical généré : {output_path}")

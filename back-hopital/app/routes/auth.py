@@ -1,14 +1,13 @@
 from flask import Blueprint, request, jsonify
 from app.models.database import get_db_connection
-import jwt as pyjwt
+from flask_jwt_extended import create_access_token
 import datetime
 import traceback
+import logging
+import pymysql.cursors
 
-
-
+logger = logging.getLogger(__name__)
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
-
-SECRET_KEY = 'votre_cle_secrete'  # À stocker dans une vraie config
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -22,8 +21,8 @@ def login():
 
     try:
         conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, mot_de_passe FROM patients WHERE email = %s", (email,))
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        cursor.execute("SELECT id, nom, email, date_naissance, sexe, mot_de_passe FROM patients WHERE email = %s", (email,))
         user = cursor.fetchone()
         cursor.close()
         conn.close()
@@ -31,20 +30,35 @@ def login():
         if not user:
             return jsonify({'message': 'Utilisateur non trouvé.'}), 404
 
-        user_id, stored_password = user
-
-        if stored_password != mot_de_passe:
+        if user['mot_de_passe'] != mot_de_passe:
             return jsonify({'message': 'Mot de passe incorrect.'}), 401
 
-        token = pyjwt.encode({
-            'id': user_id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2)
-        }, SECRET_KEY, algorithm='HS256')
+        # Créer le token avec flask-jwt-extended
+        access_token = create_access_token(
+            identity=user['id'],
+            additional_claims={
+                'nom': user['nom'],
+                'email': user['email'],
+                'date_naissance': user['date_naissance'].strftime('%Y-%m-%d') if user['date_naissance'] else None,
+                'sexe': user['sexe']
+            }
+        )
 
-        return jsonify({'token': token, 'message': 'Connexion réussie.'}), 200
+        logger.info(f"Login successful for user {user['email']}")
+        return jsonify({
+            'token': access_token,
+            'user': {
+                'id': user['id'],
+                'nom': user['nom'],
+                'email': user['email'],
+                'date_naissance': user['date_naissance'].strftime('%Y-%m-%d') if user['date_naissance'] else None,
+                'sexe': user['sexe']
+            },
+            'message': 'Connexion réussie.'
+        }), 200
 
     except Exception as e:
-        print("Erreur attrapée :", traceback.format_exc())
+        logger.error(f"Login error: {str(e)}", exc_info=True)
         return jsonify({'message': f'Erreur serveur : {str(e)}'}), 500
 
 
@@ -65,7 +79,7 @@ def signup():
 
     try:
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
 
         # Vérifie si l'utilisateur existe déjà
         cursor.execute("SELECT id FROM patients WHERE email = %s", (email,))
@@ -86,5 +100,5 @@ def signup():
         return jsonify({'message': 'Inscription réussie.'}), 201
 
     except Exception as e:
-        print("Erreur attrapée :", traceback.format_exc())
+        logger.error(f"Signup error: {str(e)}", exc_info=True)
         return jsonify({'message': f'Erreur serveur : {str(e)}'}), 500

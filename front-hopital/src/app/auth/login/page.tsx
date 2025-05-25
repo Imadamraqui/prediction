@@ -1,16 +1,22 @@
 'use client';
 import { useState } from 'react';
-
+import { useRouter } from 'next/navigation';  
+import { useEffect } from 'react';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [mot_de_passe, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/auth/login', {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, mot_de_passe }),
@@ -18,18 +24,20 @@ export default function LoginPage() {
 
       const data = await response.json();
 
-      if (response.ok) {
-        console.log("✅ Connexion établie avec succès !");
-        console.log(data); // Token, message, etc.
-        localStorage.setItem('token', data.token);
-        setMessage('✅ Connexion réussie !');
-        // TODO : rediriger vers /dashboard ou sauvegarder le token localStorage
-      } else {
-        setMessage('❌ Identifiants incorrects');
+      if (!response.ok) {
+        throw new Error(data.message || 'Erreur lors de la connexion');
       }
-    } catch (error) {
-      console.error('Erreur lors de la connexion :', error);
-      setMessage('❌ Erreur serveur. Veuillez réessayer.');
+
+      // Stocker le token et les informations utilisateur
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setMessage('Connexion réussie');
+      // Rediriger vers le dashboard
+      router.push('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+    } finally {
+      setLoading(false);
     }
   };
 

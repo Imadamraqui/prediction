@@ -13,7 +13,7 @@ export default function SignupPage() {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:5000/auth/signup', {
+      const response = await fetch('http://localhost:5000/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -33,7 +33,7 @@ export default function SignupPage() {
         setMessage(`❌ ${data.message || "Erreur lors de l'inscription."}`);
       }
     } catch (error) {
-      console.error('Erreur lors de l’inscription :', error);
+      console.error('Erreur lors de l'inscription :', error);
       setMessage('❌ Erreur serveur. Veuillez réessayer.');
     }
   };
@@ -121,7 +121,7 @@ export default function SignupPage() {
           type="submit"
           className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-all duration-200"
         >
-          S’inscrire
+          S'inscrire
         </button>
       </form>
     </div>
