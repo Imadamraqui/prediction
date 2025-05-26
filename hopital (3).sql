@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1:3306
--- Généré le : ven. 23 mai 2025 à 19:12
+-- Généré le : lun. 26 mai 2025 à 18:25
 -- Version du serveur : 8.2.0
 -- Version de PHP : 8.2.13
 
@@ -63,7 +63,7 @@ INSERT INTO `departement` (`id`, `nom_depart`, `description`, `classe_pred`) VAL
 (1, 'Endocrinologie et Diabétologie', 'Prise en charge des maladies endocriniennes et métaboliques (ex: diabète).', 'Diabetes'),
 (2, 'Cardiologie', 'Suivi des affections cardiovasculaires, y compris les maladies cardiaques.', 'Heart Di'),
 (4, 'Thalassémie', 'Prise en charge des maladies du sang, notamment les thalassémies.', 'Thalasse'),
-(5, 'Hématologie', 'Diagnostic et traitement des troubles de l'hémoglobine et des anémies diverses.', 'Anemia'),
+(5, 'Hématologie', 'Diagnostic et traitement des troubles de l’hémoglobine et des anémies diverses.', 'Anemia'),
 (6, 'Thrombocytopathies', 'Gestion des troubles de la coagulation et des pathologies vasculaires.', 'Thromboc');
 
 -- --------------------------------------------------------
@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS `patients` (
   `date_creation` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=MyISAM AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Déchargement des données de la table `patients`
@@ -137,7 +137,39 @@ INSERT INTO `patients` (`id`, `nom`, `email`, `mot_de_passe`, `date_naissance`, 
 (3, 'Youssef El Idrissi', 'youssef.idrissi@outlook.com', 'youssef789', '2000-01-18', 'Homme', '2025-04-15 18:36:45'),
 (6, 'oulali samya', 'oulalisamya3@gmail.com', 'sam123', '2003-08-17', '', '2025-05-18 18:57:14'),
 (5, 'samya', 'oulalisamya2@gmail.com', 'Samya1234', '2003-08-17', '', '2025-05-04 20:12:46'),
-(7, 'imad', 'imad@imad', 'imad123', '2003-03-07', '', '2025-05-20 00:50:02');
+(7, 'imad', 'imad@imad', 'imad123', '2003-03-07', '', '2025-05-20 00:50:02'),
+(8, 'allal', 'allal@123', 'allal123', '1999-01-01', '', '2025-05-25 17:43:39');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `predictions`
+--
+
+DROP TABLE IF EXISTS `predictions`;
+CREATE TABLE IF NOT EXISTS `predictions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `patient_id` int NOT NULL,
+  `prediction` varchar(50) NOT NULL,
+  `probabilities` json NOT NULL,
+  `recommendations` json NOT NULL,
+  `departement_id` int NOT NULL,
+  `date_prediction` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `patient_id` (`patient_id`),
+  KEY `departement_id` (`departement_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Déchargement des données de la table `predictions`
+--
+
+INSERT INTO `predictions` (`id`, `patient_id`, `prediction`, `probabilities`, `recommendations`, `departement_id`, `date_prediction`) VALUES
+(6, 8, 'Thalasse', '{\"Anemia\": 35.2346807718277, \"Healthy\": 2.660251595079899, \"Diabetes\": 10.379962623119354, \"Heart Di\": 7.840774208307266, \"Thalasse\": 41.85769855976105, \"Thromboc\": 2.026638388633728}', '[\"Consultez un hématologue\", \"Surveillez votre taux de fer\", \"Évitez les carences en vitamines\", \"Faites des bilans sanguins réguliers\"]', 4, '2025-05-26 08:39:59'),
+(5, 7, 'Thalasse', '{\"Anemia\": 35.2346807718277, \"Healthy\": 2.660251595079899, \"Diabetes\": 10.379962623119354, \"Heart Di\": 7.840774208307266, \"Thalasse\": 41.85769855976105, \"Thromboc\": 2.026638388633728}', '[\"Consultez un hématologue\", \"Surveillez votre taux de fer\", \"Évitez les carences en vitamines\", \"Faites des bilans sanguins réguliers\"]', 4, '2025-05-25 18:39:44'),
+(7, 8, 'Thalasse', '{\"Anemia\": 35.2346807718277, \"Healthy\": 2.660251595079899, \"Diabetes\": 10.379962623119354, \"Heart Di\": 7.840774208307266, \"Thalasse\": 41.85769855976105, \"Thromboc\": 2.026638388633728}', '[\"Consultez un hématologue\", \"Surveillez votre taux de fer\", \"Évitez les carences en vitamines\", \"Faites des bilans sanguins réguliers\"]', 4, '2025-05-26 08:46:31'),
+(8, 8, 'Heart Di', '{\"Anemia\": 6.5679579973220825, \"Healthy\": 0.06198239279910922, \"Diabetes\": 0.08177393465302885, \"Heart Di\": 92.4738109111786, \"Thalasse\": 0.7840889506042004, \"Thromboc\": 0.03039003349840641}', '[\"Surveillez votre tension artérielle\", \"Évitez les aliments riches en sel\", \"Faites de l\'exercice modéré\", \"Consultez un cardiologue\"]', 2, '2025-05-26 17:46:01'),
+(9, 8, 'Heart Di', '{\"Anemia\": 0.0237059619394131, \"Healthy\": 0.050888158148154616, \"Diabetes\": 0.006259269139263779, \"Heart Di\": 99.74374771118164, \"Thalasse\": 0.17022507963702083, \"Thromboc\": 0.005171435259399004}', '[\"Surveillez votre tension artérielle\", \"Évitez les aliments riches en sel\", \"Faites de l\'exercice modéré\", \"Consultez un cardiologue\"]', 2, '2025-05-26 17:49:38');
 
 -- --------------------------------------------------------
 
@@ -156,25 +188,6 @@ CREATE TABLE IF NOT EXISTS `reset_codes` (
   KEY `idx_reset_codes_email` (`email`(250)),
   KEY `idx_reset_codes_code` (`code`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Structure de la table `predictions`
---
-
-DROP TABLE IF EXISTS `predictions`;
-CREATE TABLE IF NOT EXISTS `predictions` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `patient_id` int NOT NULL,
-  `prediction` varchar(50) NOT NULL,
-  `probabilities` JSON NOT NULL,
-  `recommendations` JSON NOT NULL,
-  `departement_id` int NOT NULL,
-  `date_prediction` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `patient_id` (`patient_id`),
-  KEY `departement_id` (`departement_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
