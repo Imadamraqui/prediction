@@ -5,6 +5,7 @@ import { X, LayoutDashboard, Calendar, UserCircle, Settings, LogOut, Hospital } 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'; // To highlight active link
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Assuming tooltip component exists
+import { MessageCircle } from 'lucide-react';
 
 // Define navigation items structure
 interface NavItem {
@@ -16,6 +17,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
   { href: '/prediction', icon: Calendar, label: 'Prédiction' },
+  { href: '/chatbot', icon: MessageCircle, label: 'Chatbot' },
   { href: '/profile', icon: UserCircle, label: 'Profil' },
   { href: '/settings', icon: Settings, label: 'Paramètres' }, // Example additional item
 ];
