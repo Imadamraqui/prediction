@@ -84,9 +84,37 @@ export default function PredictionPage() {
         throw new Error('Format de réponse invalide du serveur')
       }
 
+      // Convertir les probabilités en nombres
+      const processedProbabilities = Object.entries(data.probabilities).reduce((acc, [key, value]) => {
+        acc[key] = typeof value === 'string' ? parseFloat(value) : Number(value);
+        return acc;
+      }, {} as { [key: string]: number });
+
+      console.log('Probabilités originales:', data.probabilities);
+      console.log('Probabilités traitées:', processedProbabilities);
+
+      // Sauvegarder la prédiction
+      const saveResponse = await fetch('http://localhost:5000/api/prediction/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          prediction: data.prediction,
+          probabilities: processedProbabilities,
+          recommendations: data.recommendations,
+          medecins_and_departement: data.medecins_and_departement
+        })
+      });
+
+      if (!saveResponse.ok) {
+        console.error('Erreur lors de la sauvegarde de la prédiction:', await saveResponse.text());
+      }
+
       setResult({
         prediction: data.prediction,
-        probabilities: data.probabilities,
+        probabilities: processedProbabilities,
         recommendations: data.recommendations,
         medecins_and_departement: data.medecins_and_departement
       })
@@ -174,49 +202,56 @@ export default function PredictionPage() {
                 </h3>
                 <div className="space-y-2">
                   {Object.entries(result.probabilities)
-                    .sort(([, a], [, b]) => b - a) // Trier par probabilité décroissante
-                    .map(([maladie, proba]) => (
-                      <div 
-                        key={maladie} 
-                        className={`flex items-center justify-between p-3 rounded-lg ${
-                          maladie === result.prediction 
-                            ? 'bg-blue-50 border-2 border-blue-200' 
-                            : 'bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-center">
-                          <span className={`text-sm font-medium ${
+                    .sort(([, a], [, b]) => b - a)
+                    .map(([maladie, proba]) => {
+                      const probaNum = typeof proba === 'string' ? parseFloat(proba) : Number(proba);
+                      if (isNaN(probaNum)) {
+                        console.error(`Probabilité invalide pour ${maladie}:`, proba);
+                        return null;
+                      }
+                      return (
+                        <div 
+                          key={maladie} 
+                          className={`flex items-center justify-between p-3 rounded-lg ${
                             maladie === result.prediction 
-                              ? 'text-blue-700' 
-                              : 'text-gray-700'
-                          }`}>
-                            {maladie}
-                            {maladie === result.prediction && (
-                              <span className="ml-2 text-xs text-blue-500">(Prédiction principale)</span>
-                            )}
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="w-40 bg-gray-200 rounded-full h-2.5 mr-2">
-                            <div
-                              className={`h-2.5 rounded-full ${
-                                maladie === result.prediction 
-                                  ? 'bg-blue-600' 
-                                  : 'bg-gray-400'
-                              }`}
-                              style={{ width: `${proba}%` }}
-                            ></div>
+                              ? 'bg-blue-50 border-2 border-blue-200' 
+                              : 'bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            <span className={`text-sm font-medium ${
+                              maladie === result.prediction 
+                                ? 'text-blue-700' 
+                                : 'text-gray-700'
+                            }`}>
+                              {maladie}
+                              {maladie === result.prediction && (
+                                <span className="ml-2 text-xs text-blue-500">(Prédiction principale)</span>
+                              )}
+                            </span>
                           </div>
-                          <span className={`text-sm font-medium ${
-                            maladie === result.prediction 
-                              ? 'text-blue-700' 
-                              : 'text-gray-700'
-                          }`}>
-                            {proba.toFixed(1)}%
-                          </span>
+                          <div className="flex items-center">
+                            <div className="w-40 bg-gray-200 rounded-full h-2.5 mr-2">
+                              <div
+                                className={`h-2.5 rounded-full ${
+                                  maladie === result.prediction 
+                                    ? 'bg-blue-600' 
+                                    : 'bg-gray-400'
+                                }`}
+                                style={{ width: `${probaNum}%` }}
+                              ></div>
+                            </div>
+                            <span className={`text-sm font-medium ${
+                              maladie === result.prediction 
+                                ? 'text-blue-700' 
+                                : 'text-gray-700'
+                            }`}>
+                              {probaNum.toFixed(1)}%
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                 </div>
               </div>
 

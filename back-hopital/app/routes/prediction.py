@@ -10,7 +10,9 @@ import pymysql
 from app.models.database import get_db_connection
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import json
+import logging
 
+logger = logging.getLogger(__name__)
 prediction_bp = Blueprint('prediction', __name__)
 
 # Charger le modèle et l'encodeur
@@ -215,6 +217,10 @@ def predict():
             for i, proba in enumerate(prediction_proba)
         }
         
+        logger.debug(f"Probabilités calculées: {probabilities}")
+        logger.debug(f"Type des probabilités: {type(probabilities)}")
+        logger.debug(f"Première probabilité: {next(iter(probabilities.items()))}")
+        
         # Vérifier que la classe prédite a la plus haute probabilité
         predicted_class_index = prediction[0]
         predicted_class_prob = prediction_proba[predicted_class_index] * 100
@@ -246,34 +252,43 @@ def save_prediction():
     try:
         current_user_id = get_jwt_identity()
         data = request.get_json()
+        logger.debug(f"Saving prediction for user {current_user_id}")
+        logger.debug(f"Prediction data: {data}")
         
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
         
-        # Récupérer l'ID du patient
-        cursor.execute("SELECT id FROM patients WHERE user_id = %s", (current_user_id,))
-        patient = cursor.fetchone()
-        if not patient:
-            return jsonify({'error': 'Patient non trouvé'}), 404
+        # Convertir l'ID en entier pour la requête SQL
+        user_id = int(current_user_id)
+
+        # Obtenir l'ID du département à partir du nom du département
+        departement_name = data['medecins_and_departement']['departement']['nom_depart']
+        cursor.execute("SELECT id FROM departement WHERE nom_depart = %s", (departement_name,))
+        departement = cursor.fetchone()
+        
+        if not departement:
+            logger.error(f"Département non trouvé: {departement_name}")
+            return jsonify({'error': 'Département non trouvé'}), 404
 
         # Insérer la prédiction
         cursor.execute("""
             INSERT INTO predictions (patient_id, prediction, probabilities, recommendations, departement_id)
             VALUES (%s, %s, %s, %s, %s)
         """, (
-            patient['id'],
+            user_id,
             data['prediction'],
             json.dumps(data['probabilities']),
             json.dumps(data['recommendations']),
-            data['departement_id']
+            departement['id']
         ))
         
         conn.commit()
         cursor.close()
         conn.close()
 
+        logger.info(f"Prédiction enregistrée avec succès pour l'utilisateur {user_id}")
         return jsonify({'message': 'Prédiction enregistrée avec succès'}), 200
 
     except Exception as e:
-        print(f"Erreur lors de la prédiction : {str(e)}")
+        logger.error(f"Erreur lors de la sauvegarde de la prédiction: {str(e)}", exc_info=True)
         return jsonify({'error': str(e)}), 500

@@ -35,7 +35,7 @@ def login():
 
         # Créer le token avec flask-jwt-extended
         access_token = create_access_token(
-            identity=user['id'],
+            identity=str(user['id']),
             additional_claims={
                 'nom': user['nom'],
                 'email': user['email'],

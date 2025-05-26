@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -18,6 +17,63 @@ export default function HomePage() {
 
   // State for header shadow on scroll
   const [headerShadow, setHeaderShadow] = useState(false);
+
+  const [currentHero, setCurrentHero] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+  const heroes = [
+    {
+      title: "Bienvenue à l'Hôpital Digital",
+      description: "Des soins de qualité pour votre santé, avec une équipe médicale professionnelle à votre service.",
+      buttons: [
+        {
+          text: "Prendre rendez-vous",
+          onClick: () => router.push('/auth/login'),
+          className: "bg-white text-blue-600 hover:bg-gray-100"
+        },
+        {
+          text: "S'inscrire",
+          onClick: () => router.push('/auth/signup'),
+          className: "border-white text-white hover:bg-white hover:text-blue-600"
+        }
+      ],
+      bgImage: "/images/hero-1.jpg"
+    },
+    {
+      title: "Prédiction de Santé Intelligente",
+      description: "Utilisez notre système d'IA pour analyser vos données de santé et obtenir des prédictions personnalisées.",
+      buttons: [
+        {
+          text: "Faire une prédiction",
+          onClick: () => router.push('/prediction'),
+          className: "bg-white text-blue-600 hover:bg-gray-100"
+        },
+        {
+          text: "En savoir plus",
+          onClick: () => router.push('/prediction/about'),
+          className: "border-white text-white hover:bg-white hover:text-blue-600"
+        }
+      ],
+      bgImage: "/images/hero-2.jpg"
+    },
+    {
+      title: "Assistant Virtuel 24/7",
+      description: "Notre chatbot médical est disponible à tout moment pour répondre à vos questions de santé.",
+      buttons: [
+        {
+          text: "Discuter maintenant",
+          onClick: () => router.push('/chatbot'),
+          className: "bg-white text-blue-600 hover:bg-gray-100"
+        },
+        {
+          text: "Découvrir les fonctionnalités",
+          onClick: () => router.push('/chatbot/features'),
+          className: "border-white text-white hover:bg-white hover:text-blue-600"
+        }
+      ],
+      bgImage: "/images/hero-3.jpg"
+    }
+  ];
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -70,6 +126,16 @@ export default function HomePage() {
       });
   }, []);
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isAutoPlaying) {
+      interval = setInterval(() => {
+        setCurrentHero((prev) => (prev + 1) % heroes.length);
+      }, 5000);
+    }
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, heroes.length]);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     setIsConnected(false);
@@ -79,36 +145,91 @@ export default function HomePage() {
   // Afficher seulement les 3 premiers médecins
   const medecinsLimites = medecins.slice(0, 3);
 
+  const handlePrevHero = () => {
+    setIsAutoPlaying(false);
+    setCurrentHero((prev) => (prev - 1 + heroes.length) % heroes.length);
+  };
+
+  const handleNextHero = () => {
+    setIsAutoPlaying(false);
+    setCurrentHero((prev) => (prev + 1) % heroes.length);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* En-tête - Sticky with dynamic shadow */}
      
 
-      {/* Section Hero - Improved styling and animations */}
-      <section className="hero-section h-[600px] overflow-hidden"> {/* Added overflow-hidden */} 
-        <div className="hero-content container mx-auto px-4 h-full flex flex-col justify-center items-start"> {/* Align items start */} 
-          {/* Added animation classes (requires tw-animate-css or similar setup in globals/tailwind.config) */}
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 animate-fade-in-up animate-delay-300">
-            Bienvenue à l'Hôpital Digital
-          </h2>
-          <p className="text-xl md:text-2xl text-white mb-8 max-w-2xl animate-fade-in-up animate-delay-500">
-            Des soins de qualité pour votre santé, avec une équipe médicale professionnelle à votre service.
-          </p>
-          <div className="flex gap-4 animate-fade-in-up animate-delay-700">
-            <Button 
-              onClick={() => router.push('/auth/login')}
-              className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg rounded-lg transition-transform duration-300 ease-in-out hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              Prendre rendez-vous
-            </Button>
-            <Button 
-              onClick={() => router.push('/auth/signup')}
-              variant="outline"
-              className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3 text-lg rounded-lg transition-all duration-300 ease-in-out hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              S'inscrire
-            </Button>
+      {/* Section Hero - Carousel */}
+      <section className="hero-section h-[600px] relative overflow-hidden">
+        {heroes.map((hero, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-1000 ${
+              index === currentHero ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{
+              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${hero.bgImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          >
+            <div className="hero-content container mx-auto px-4 h-full flex flex-col justify-center items-start">
+              <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 animate-fade-in-up">
+                {hero.title}
+              </h2>
+              <p className="text-xl md:text-2xl text-white mb-8 max-w-2xl animate-fade-in-up">
+                {hero.description}
+              </p>
+              <div className="flex gap-4 animate-fade-in-up">
+                {hero.buttons.map((button, btnIndex) => (
+                  <Button
+                    key={btnIndex}
+                    onClick={button.onClick}
+                    className={`${button.className} px-8 py-3 text-lg rounded-lg transition-transform duration-300 ease-in-out hover:scale-105 shadow-lg hover:shadow-xl`}
+                  >
+                    {button.text}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
+        ))}
+
+        {/* Navigation Controls */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-4">
+          <button
+            onClick={handlePrevHero}
+            className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          
+          <div className="flex gap-2">
+            {heroes.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setIsAutoPlaying(false);
+                  setCurrentHero(index);
+                }}
+                className={`w-3 h-3 rounded-full transition-colors ${
+                  index === currentHero ? 'bg-white' : 'bg-white/50'
+                }`}
+              />
+            ))}
+          </div>
+
+          <button
+            onClick={handleNextHero}
+            className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       </section>
 
