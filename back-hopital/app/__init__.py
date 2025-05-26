@@ -3,6 +3,7 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from datetime import timedelta
 from flask_sqlalchemy import SQLAlchemy
+from app.routes.chatbot import chatbot_bp
 import logging
 
 jwt = JWTManager()
@@ -50,5 +51,11 @@ def create_app():
     app.register_blueprint(prediction_bp, url_prefix='/api/prediction')
     app.register_blueprint(predictions_bp, url_prefix='/api/predictions')
     app.register_blueprint(medecins_bp, url_prefix='/api')
+    app.register_blueprint(chatbot_bp)
+
+
+     # Liste toutes les routes disponibles pour debug
+    for rule in app.url_map.iter_rules():
+        print(f"[ROUTE] {rule.endpoint} → {rule}")
 
     return app
