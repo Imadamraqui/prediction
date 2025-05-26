@@ -54,7 +54,7 @@ export default function HomePage() {
           className: "border-white text-white hover:bg-white hover:text-blue-600"
         }
       ],
-      bgImage: "/images/hero-2.jpg"
+      bgImage: "/images/heroPredict.png"
     },
     {
       title: "Assistant Virtuel 24/7",
@@ -161,7 +161,7 @@ export default function HomePage() {
      
 
       {/* Section Hero - Carousel */}
-      <section className="hero-section h-[600px] relative overflow-hidden">
+      <section className="hero-section h-[600px] relative overflow-hidden w-full">
         {heroes.map((hero, index) => (
           <div
             key={index}
@@ -169,19 +169,21 @@ export default function HomePage() {
               index === currentHero ? 'opacity-100' : 'opacity-0'
             }`}
             style={{
-              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${hero.bgImage})`,
+              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${hero.bgImage})`,
               backgroundSize: 'cover',
-              backgroundPosition: 'center'
+              backgroundPosition: 'center',
+              width: '100%',
+              height: '100%'
             }}
           >
-            <div className="hero-content container mx-auto px-4 h-full flex flex-col justify-center items-start">
+            <div className="hero-content container mx-auto px-4 h-full flex flex-col justify-center items-start max-w-7xl">
               <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 animate-fade-in-up">
                 {hero.title}
               </h2>
               <p className="text-xl md:text-2xl text-white mb-8 max-w-2xl animate-fade-in-up">
                 {hero.description}
               </p>
-              <div className="flex gap-4 animate-fade-in-up">
+              <div className="flex flex-wrap gap-4 animate-fade-in-up">
                 {hero.buttons.map((button, btnIndex) => (
                   <Button
                     key={btnIndex}
@@ -197,7 +199,7 @@ export default function HomePage() {
         ))}
 
         {/* Navigation Controls */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-4">
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-4 z-10">
           <button
             onClick={handlePrevHero}
             className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors"
