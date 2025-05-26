@@ -33,7 +33,7 @@ export default function SignupPage() {
         setMessage(`❌ ${data.message || "Erreur lors de l'inscription."}`);
       }
     } catch (error) {
-      console.error('Erreur lors de l'inscription :', error);
+      console.error('Erreur lors de l\'inscription :', error);
       setMessage('❌ Erreur serveur. Veuillez réessayer.');
     }
   };

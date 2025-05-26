@@ -38,19 +38,30 @@ export default function DashboardPage() {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token')
+        console.log('Token from localStorage:', token)
+        
         if (!token) {
+          console.log('No token found, redirecting to login')
           router.push('/auth/login')
           return
         }
 
         // Récupérer les informations du patient
+        console.log('Fetching profile with token:', token)
         const response = await fetch('http://localhost:5000/api/patient/profile', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         })
-        if (!response.ok) throw new Error('Erreur lors de la récupération du profil')
+        console.log('Profile response status:', response.status)
+        
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('Profile error:', errorData)
+          throw new Error('Erreur lors de la récupération du profil')
+        }
         const patientData = await response.json()
+        console.log('Profile data:', patientData)
         setPatientInfo(patientData)
 
         // Récupérer l'historique des prédictions
@@ -61,7 +72,16 @@ export default function DashboardPage() {
         })
         if (!predictionsResponse.ok) throw new Error('Erreur lors de la récupération des prédictions')
         const predictionsData = await predictionsResponse.json()
-        setPredictions(predictionsData)
+        
+        // Traiter les données des prédictions
+        const processedPredictions = predictionsData.map((pred: any) => ({
+          ...pred,
+          probabilities: typeof pred.probabilities === 'string' ? JSON.parse(pred.probabilities) : pred.probabilities,
+          recommendations: typeof pred.recommendations === 'string' ? JSON.parse(pred.recommendations) : pred.recommendations
+        }))
+        
+        console.log('Predictions traitées:', processedPredictions)
+        setPredictions(processedPredictions)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Une erreur est survenue')
       } finally {
@@ -179,23 +199,34 @@ export default function DashboardPage() {
                     </h4>
                     <div className="space-y-2">
                       {Object.entries(pred.probabilities)
-                        .sort(([, a], [, b]) => b - a)
-                        .map(([maladie, proba]) => (
-                          <div key={maladie} className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600">{maladie}</span>
-                            <div className="flex items-center">
-                              <div className="w-32 bg-gray-200 rounded-full h-2 mr-2">
-                                <div
-                                  className="bg-blue-600 h-2 rounded-full"
-                                  style={{ width: `${proba}%` }}
-                                ></div>
+                        .sort(([, a], [, b]) => {
+                          const numA = typeof a === 'string' ? parseFloat(a) : Number(a);
+                          const numB = typeof b === 'string' ? parseFloat(b) : Number(b);
+                          return numB - numA;
+                        })
+                        .map(([maladie, proba]) => {
+                          const probaNum = typeof proba === 'string' ? parseFloat(proba) : Number(proba);
+                          if (isNaN(probaNum)) {
+                            console.error(`Probabilité invalide pour ${maladie}:`, proba);
+                            return null;
+                          }
+                          return (
+                            <div key={maladie} className="flex items-center justify-between">
+                              <span className="text-sm text-gray-600">{maladie}</span>
+                              <div className="flex items-center">
+                                <div className="w-32 bg-gray-200 rounded-full h-2 mr-2">
+                                  <div
+                                    className="bg-blue-600 h-2 rounded-full"
+                                    style={{ width: `${probaNum}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-sm text-gray-600">
+                                  {probaNum.toFixed(1)}%
+                                </span>
                               </div>
-                              <span className="text-sm text-gray-600">
-                                {proba.toFixed(1)}%
-                              </span>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                     </div>
                   </div>
 
@@ -204,9 +235,13 @@ export default function DashboardPage() {
                       Recommandations :
                     </h4>
                     <ul className="list-disc list-inside text-sm text-gray-600">
-                      {pred.recommendations.map((rec, index) => (
-                        <li key={index}>{rec}</li>
-                      ))}
+                      {Array.isArray(pred.recommendations) ? (
+                        pred.recommendations.map((rec, index) => (
+                          <li key={index}>{rec}</li>
+                        ))
+                      ) : (
+                        <li>Pas de recommandations disponibles</li>
+                      )}
                     </ul>
                   </div>
                 </CardContent>

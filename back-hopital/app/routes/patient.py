@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.database import get_db_connection
 import logging
+import pymysql.cursors
 
 logger = logging.getLogger(__name__)
 patient_bp = Blueprint('patient', __name__)
@@ -17,9 +18,11 @@ def get_profile():
         logger.debug(f"Current user ID: {current_user_id}")
         
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
         
-        cursor.execute("SELECT id, nom, email, date_naissance, sexe FROM patients WHERE id = %s", (current_user_id,))
+        # Convertir l'ID en entier pour la requête SQL
+        user_id = int(current_user_id)
+        cursor.execute("SELECT id, nom, email, date_naissance, sexe FROM patients WHERE id = %s", (user_id,))
         patient = cursor.fetchone()
         
         cursor.close()
