@@ -11,7 +11,7 @@ def get_medecins():
     connection = get_db_connection()
     try:
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute("SELECT id, nom, email, grade, photo_url FROM medecins")
+            cursor.execute("SELECT id, nom, email, grade, photo_url, specialite FROM medecins")
             medecins = cursor.fetchall()
         return jsonify(medecins)
     except Exception as e:
@@ -25,7 +25,7 @@ def get_medecin(id):
     connection = get_db_connection()
     try:
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute("SELECT id, nom, email, grade, photo_url FROM medecins WHERE id = %s", (id,))
+            cursor.execute("SELECT id, nom, email, grade, photo_url, specialite FROM medecins WHERE id = %s", (id,))
             medecin = cursor.fetchone()
         if medecin:
             return jsonify(medecin)

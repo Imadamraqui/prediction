@@ -11,6 +11,7 @@ type Medecin = {
   email: string;
   grade: string;
   photo_url: string;
+  specialite: string;
 };
 
 export default function ListeMedecins() {
@@ -86,7 +87,7 @@ export default function ListeMedecins() {
             medecin={{
               id: medecin.id,
               nom: medecin.nom,
-              specialite: medecin.grade,
+              specialite: medecin.specialite,
               photo_url: medecin.photo_url
             }} 
           />
