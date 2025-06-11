@@ -26,11 +26,7 @@ export default function HomePage() {
       title: "Bienvenue à l'Hôpital Digital",
       description: "Des soins de qualité pour votre santé, avec une équipe médicale professionnelle à votre service.",
       buttons: [
-        {
-          text: "Prendre rendez-vous",
-          onClick: () => router.push('/auth/login'),
-          className: "bg-white text-blue-600 hover:bg-gray-100"
-        },
+       
         {
           text: "S'inscrire",
           onClick: () => router.push('/auth/signup'),
@@ -71,7 +67,7 @@ export default function HomePage() {
           className: "border-white text-white hover:bg-white hover:text-blue-600"
         }
       ],
-      bgImage: "/images/hero-3.jpg"
+      bgImage: "/images/heroChat.png"
     }
   ];
 

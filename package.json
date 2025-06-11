@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@radix-ui/react-tooltip": "^1.2.7"
+    "@radix-ui/react-tooltip": "^1.2.7",
+    "react-markdown": "^10.1.0"
   }
 }
