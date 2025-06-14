@@ -109,17 +109,22 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    // Fetch departements - consider adding loading/error state similar to medecins if needed
-    fetch("http://localhost:5000/api/departements")
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchDepartements = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/departements/');
+        if (!response.ok) {
+          throw new Error('Erreur lors de la récupération des départements');
+        }
+        const data = await response.json();
         console.log("Départements chargés :", data);
         setDepartements(data);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Erreur lors du chargement des départements :", error);
-        // Optionally set an error state for departements
-      });
+        setError(error instanceof Error ? error.message : 'Une erreur est survenue');
+      }
+    };
+
+    fetchDepartements();
   }, []);
 
   useEffect(() => {
