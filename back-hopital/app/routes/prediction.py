@@ -95,29 +95,41 @@ def get_medecins_and_departement(prediction):
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             # Obtenir le département
             departement_id = departement_mapping.get(prediction)
+            logger.debug(f"Recherche du département avec l'ID: {departement_id}")
+            
             if departement_id:
+                # Requête pour le département
                 cursor.execute("""
                     SELECT id, nom_depart, description 
                     FROM departement 
                     WHERE id = %s
                 """, (departement_id,))
                 departement = cursor.fetchone()
+                logger.debug(f"Département trouvé: {departement}")
 
-                # Obtenir les médecins du département
-                cursor.execute("""
-                    SELECT id, nom, grade, specialite, photo_url 
-                    FROM medecins 
-                    WHERE departement_id = %s 
-                    LIMIT 3
-                """, (departement_id,))
-                medecins = cursor.fetchall()
+                if departement:
+                    # Requête pour les médecins
+                    cursor.execute("""
+                        SELECT id, nom, grade, specialite, photo_url 
+                        FROM medecins 
+                        WHERE departement_id = %s 
+                        LIMIT 3
+                    """, (departement_id,))
+                    medecins = cursor.fetchall()
+                    logger.debug(f"Médecins trouvés: {medecins}")
 
-                return {
-                    "departement": departement,
-                    "medecins": medecins
-                }
+                    return {
+                        "departement": departement,
+                        "medecins": medecins
+                    }
+                else:
+                    logger.warning(f"Aucun département trouvé pour l'ID: {departement_id}")
+                    return None
+            else:
+                logger.warning(f"Aucun mapping trouvé pour la prédiction: {prediction}")
+                return None
     except Exception as e:
-        print(f"Erreur lors de la récupération des médecins et du département : {str(e)}")
+        logger.error(f"Erreur lors de la récupération des médecins et du département : {str(e)}")
         return None
     finally:
         connection.close()
@@ -272,7 +284,13 @@ def save_prediction():
 
         # Insérer la prédiction
         cursor.execute("""
-            INSERT INTO predictions (patient_id, prediction, probabilities, recommendations, departement_id)
+            INSERT INTO predictions (
+                patient_id, 
+                prediction, 
+                probabilities, 
+                recommendations, 
+                departement_id
+            )
             VALUES (%s, %s, %s, %s, %s)
         """, (
             user_id,

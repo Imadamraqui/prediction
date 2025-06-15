@@ -1,73 +1,96 @@
-from flask import Blueprint, jsonify, request
-from app.models.database import get_db_connection  # importe ta fonction existante
+from flask import Blueprint, jsonify
+from app.models.medecin import Medecin
+from app.models.departement import Departement
 from flask_cors import cross_origin
-import pymysql.cursors
-import smtplib
-from email.mime.text import MIMEText
+from app import db
+import logging
 
+logger = logging.getLogger(__name__)
 medecins_bp = Blueprint('medecins', __name__)
 
 @medecins_bp.route('/medecins', methods=['GET'])
 @cross_origin()
 def get_medecins():
-    connection = get_db_connection()
     try:
-        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute("SELECT id, nom, email, grade, photo_url, specialite FROM medecins")
-            medecins = cursor.fetchall()
-        return jsonify(medecins)
+        medecins = Medecin.query.all()
+        return jsonify([{
+            'id': m.id,
+            'nom': m.nom,
+            'email': m.email,
+            'grade': m.grade,
+            'photo_url': m.photo_url,
+            'specialite': m.specialite,
+            'departement': m.departement.nom_depart if m.departement else None
+        } for m in medecins])
     except Exception as e:
+        logger.error(f"Erreur lors de la récupération des médecins: {str(e)}")
         return jsonify({"error": str(e)}), 500
-    finally:
-        connection.close()
 
 @medecins_bp.route('/medecins/<int:id>', methods=['GET'])
 @cross_origin()
 def get_medecin(id):
-    connection = get_db_connection()
     try:
-        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute("SELECT id, nom, email, grade, photo_url, specialite FROM medecins WHERE id = %s", (id,))
-            medecin = cursor.fetchone()
+        medecin = Medecin.query.get(id)
         if medecin:
-            return jsonify(medecin)
+            return jsonify({
+                'id': medecin.id,
+                'nom': medecin.nom,
+                'email': medecin.email,
+                'grade': medecin.grade,
+                'photo_url': medecin.photo_url,
+                'specialite': medecin.specialite,
+                'departement': medecin.departement.nom_depart if medecin.departement else None
+            })
         return jsonify({"error": "Médecin introuvable"}), 404
     except Exception as e:
+        logger.error(f"Erreur lors de la récupération du médecin: {str(e)}")
         return jsonify({"error": str(e)}), 500
-    finally:
-        connection.close()
 
-@medecins_bp.route('/contact-medecin', methods=['POST', 'OPTIONS'])
-@cross_origin(origins="http://localhost:3000", allow_headers=["Content-Type"], methods=["POST", "OPTIONS"])
-def contact_medecin():
-    if request.method == "OPTIONS":
-        # Répondre OK pour la requête preflight CORS
-        response = jsonify({'ok': True})
-        response.status_code = 200
-        return response
-    data = request.json
-    medecin_email = data.get("medecinEmail")
-    message = data.get("message")
-    if not medecin_email or not message:
-        return jsonify({"error": "Champs manquants"}), 400
-
+@medecins_bp.route('/update-departements', methods=['POST'])
+@cross_origin()
+def update_medecins_departements():
     try:
-        # Configure ton serveur SMTP ici
-        smtp_host = "smtp.example.com"
-        smtp_port = 587
-        smtp_user = "ton_email@example.com"
-        smtp_pass = "ton_mot_de_passe"
+        # Mapping des spécialités vers les départements
+        specialite_to_departement = {
+            'Endocrinologie': 1,  # Endocrinologie et Diabétologie
+            'Cardiologie': 2,     # Cardiologie
+            'Hématologie': 4,     # Thalassémie
+            'Thalassémie': 4,     # Thalassémie
+            'Anémie': 5,          # Hématologie
+            'Thrombocytopathie': 6 # Thrombocytopathies
+        }
 
-        msg = MIMEText(message)
-        msg["Subject"] = "Nouveau message d'un patient"
-        msg["From"] = smtp_user
-        msg["To"] = medecin_email
+        # Mettre à jour chaque médecin
+        for medecin in Medecin.query.all():
+            if medecin.specialite in specialite_to_departement:
+                medecin.departement_id = specialite_to_departement[medecin.specialite]
+            else:
+                # Par défaut, assigner au département général (ID 1)
+                medecin.departement_id = 1
 
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_pass)
-            server.sendmail(smtp_user, [medecin_email], msg.as_string())
+        db.session.commit()
+        return jsonify({"message": "Médecins mis à jour avec succès"}), 200
 
-        return jsonify({"ok": True})
     except Exception as e:
+        logger.error(f"Erreur lors de la mise à jour des médecins: {str(e)}")
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@medecins_bp.route('/debug', methods=['GET'])
+@cross_origin()
+def debug_medecins():
+    try:
+        medecins = Medecin.query.all()
+        debug_info = []
+        for medecin in medecins:
+            debug_info.append({
+                'id': medecin.id,
+                'nom': medecin.nom,
+                'specialite': medecin.specialite,
+                'departement_id': medecin.departement_id,
+                'departement': medecin.departement.nom_depart if medecin.departement else None
+            })
+        return jsonify(debug_info), 200
+    except Exception as e:
+        logger.error(f"Erreur lors du débogage des médecins: {str(e)}")
         return jsonify({"error": str(e)}), 500

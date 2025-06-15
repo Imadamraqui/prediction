@@ -26,11 +26,7 @@ export default function HomePage() {
       title: "Bienvenue à l'Hôpital Digital",
       description: "Des soins de qualité pour votre santé, avec une équipe médicale professionnelle à votre service.",
       buttons: [
-        {
-          text: "Prendre rendez-vous",
-          onClick: () => router.push('/auth/login'),
-          className: "bg-white text-blue-600 hover:bg-gray-100"
-        },
+       
         {
           text: "S'inscrire",
           onClick: () => router.push('/auth/signup'),
@@ -71,7 +67,7 @@ export default function HomePage() {
           className: "border-white text-white hover:bg-white hover:text-blue-600"
         }
       ],
-      bgImage: "/images/hero-3.jpg"
+      bgImage: "/images/heroChat.png"
     }
   ];
 
@@ -113,17 +109,22 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    // Fetch departements - consider adding loading/error state similar to medecins if needed
-    fetch("http://localhost:5000/api/departements")
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchDepartements = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/departements/');
+        if (!response.ok) {
+          throw new Error('Erreur lors de la récupération des départements');
+        }
+        const data = await response.json();
         console.log("Départements chargés :", data);
         setDepartements(data);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Erreur lors du chargement des départements :", error);
-        // Optionally set an error state for departements
-      });
+        setError(error instanceof Error ? error.message : 'Une erreur est survenue');
+      }
+    };
+
+    fetchDepartements();
   }, []);
 
   useEffect(() => {
