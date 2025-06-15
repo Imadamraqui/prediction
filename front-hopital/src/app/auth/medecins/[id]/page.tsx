@@ -48,6 +48,13 @@ function MedecinDetailClient({ params }: { params: Promise<{ id: string }> | { i
   const [medecin, setMedecin] = useState<Medecin | null>(null);
   const [showSpecialite, setShowSpecialite] = useState(false);
 
+  // Ajout pour le formulaire de contact
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     fetch(`http://localhost:5000/api/medecins/${id}`, { cache: 'no-store' })
       .then(res => {
@@ -96,6 +103,7 @@ function MedecinDetailClient({ params }: { params: Promise<{ id: string }> | { i
             {medecin.email ? (
               <a
                 href={`mailto:${medecin.email}`}
+                // Supprime target et rel pour mailto
                 className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full shadow transition"
               >
                 Contacter par email
@@ -116,12 +124,13 @@ function MedecinDetailClient({ params }: { params: Promise<{ id: string }> | { i
                 Appeler
               </a>
             )}
-            {/* Pour d'autres méthodes de contact, il faut développer une fonctionnalité supplémentaire :
-                - Un formulaire de contact qui envoie un message via une API (backend requis)
-                - Un système de chat intégré (backend requis)
-                - Prise de rendez-vous en ligne (backend requis)
-                Les liens mailto: et tel: sont les seules méthodes directes côté web sans backend.
-            */}
+            <button
+              type="button"
+              onClick={() => setShowContactForm(!showContactForm)}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-6 rounded-full shadow transition"
+            >
+              Envoyer un message
+            </button>
             {!showSpecialite ? (
               <button
                 type="button"
@@ -141,6 +150,60 @@ function MedecinDetailClient({ params }: { params: Promise<{ id: string }> | { i
               </div>
             )}
           </div>
+          {showContactForm && (
+            <form
+              className="mt-4 bg-white p-4 rounded-xl shadow w-full max-w-md"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setSending(true);
+                setError(null);
+                setSent(false);
+                try {
+                  const res = await fetch("http://localhost:5000/medecins/contact-medecin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      medecinEmail: medecin.email,
+                      message,
+                    }),
+                  });
+                  if (!res.ok) {
+                    // Essaye de lire le message d'erreur du backend
+                    let errMsg = "Erreur lors de l'envoi";
+                    try {
+                      const data = await res.json();
+                      errMsg = data.error || errMsg;
+                    } catch {}
+                    throw new Error(errMsg);
+                  }
+                  setSent(true);
+                  setMessage("");
+                } catch (err: any) {
+                  setError(err.message || "Erreur inconnue. Vérifiez la connexion au serveur.");
+                } finally {
+                  setSending(false);
+                }
+              }}
+            >
+              <textarea
+                className="w-full border rounded p-2 mb-2"
+                rows={4}
+                placeholder="Votre message pour le médecin"
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                required
+              />
+              <button
+                type="submit"
+                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+                disabled={sending}
+              >
+                {sending ? "Envoi..." : "Envoyer"}
+              </button>
+              {sent && <div className="text-green-600 mt-2">Message envoyé !</div>}
+              {error && <div className="text-red-600 mt-2">{error}</div>}
+            </form>
+          )}
         </div>
         {/* Photo à droite */}
         <div className="flex-1 flex items-center justify-center bg-gradient-to-tr from-blue-100 to-green-100 p-8">
