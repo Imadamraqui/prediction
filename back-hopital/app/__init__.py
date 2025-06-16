@@ -31,7 +31,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # Importation explicite des classes de modèles pour s'assurer qu'elles sont enregistrées avec SQLAlchemy
+    # Importation explicite des modèles
     from app.models.patient import Patient
     from app.models.departement import Departement
     from app.models.prediction import Prediction
@@ -46,7 +46,6 @@ def create_app():
             logger.error(f"Erreur de connexion à la base de données: {str(e)}")
 
     # Enregistrement des blueprints
-    print("Loading blueprints...")  # Debug print
     from app.routes.auth import auth_bp
     from app.routes.patient import patient_bp
     from app.routes.departements import departements_bp
@@ -54,8 +53,8 @@ def create_app():
     from app.routes.predictions import predictions_bp
     from app.routes.medecins import medecins_bp
     from app.routes.stats import stats_bp
+    from app.routes.historique_pdf import historique_pdf_bp  # ✅ déplacé ici après création de app
 
-    print("Registering blueprints...")  # Debug print
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(patient_bp, url_prefix='/api/patient')
     app.register_blueprint(departements_bp, url_prefix='/api/departements')
@@ -63,11 +62,11 @@ def create_app():
     app.register_blueprint(predictions_bp, url_prefix='/api/predictions')
     app.register_blueprint(medecins_bp, url_prefix='/api')
     app.register_blueprint(chatbot_bp)
-    app.register_blueprint(stats_bp)  # Le préfixe est déjà défini dans le blueprint
-    print("Blueprints registered!")  # Debug print
+    app.register_blueprint(stats_bp)
+    app.register_blueprint(historique_pdf_bp)  # ✅ fonctionne maintenant correctement
 
-    # Liste toutes les routes disponibles pour debug
-    print("\nRegistered routes:")  # Debug print
+    # Liste toutes les routes disponibles
+    print("\nRegistered routes:")
     for rule in app.url_map.iter_rules():
         print(f"[ROUTE] {rule.endpoint} → {rule}")
 

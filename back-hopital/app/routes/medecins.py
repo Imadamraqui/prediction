@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from app.models.medecin import Medecin
 from app.models.departement import Departement
 from flask_cors import cross_origin
@@ -12,7 +12,13 @@ medecins_bp = Blueprint('medecins', __name__)
 @cross_origin()
 def get_medecins():
     try:
-        medecins = Medecin.query.all()
+        departement_id = request.args.get('departement_id')
+
+        if departement_id:
+            medecins = Medecin.query.filter_by(departement_id=departement_id).all()
+        else:
+            medecins = Medecin.query.all()
+
         return jsonify([{
             'id': m.id,
             'nom': m.nom,
@@ -52,21 +58,16 @@ def update_medecins_departements():
     try:
         # Mapping des spécialités vers les départements
         specialite_to_departement = {
-            'Endocrinologie': 1,  # Endocrinologie et Diabétologie
-            'Cardiologie': 2,     # Cardiologie
-            'Hématologie': 4,     # Thalassémie
-            'Thalassémie': 4,     # Thalassémie
-            'Anémie': 5,          # Hématologie
-            'Thrombocytopathie': 6 # Thrombocytopathies
+            'Endocrinologie': 1,
+            'Cardiologie': 2,
+            'Hématologie': 4,
+            'Thalassémie': 4,
+            'Anémie': 5,
+            'Thrombocytopathie': 6
         }
 
-        # Mettre à jour chaque médecin
         for medecin in Medecin.query.all():
-            if medecin.specialite in specialite_to_departement:
-                medecin.departement_id = specialite_to_departement[medecin.specialite]
-            else:
-                # Par défaut, assigner au département général (ID 1)
-                medecin.departement_id = 1
+            medecin.departement_id = specialite_to_departement.get(medecin.specialite, 1)
 
         db.session.commit()
         return jsonify({"message": "Médecins mis à jour avec succès"}), 200
@@ -81,15 +82,13 @@ def update_medecins_departements():
 def debug_medecins():
     try:
         medecins = Medecin.query.all()
-        debug_info = []
-        for medecin in medecins:
-            debug_info.append({
-                'id': medecin.id,
-                'nom': medecin.nom,
-                'specialite': medecin.specialite,
-                'departement_id': medecin.departement_id,
-                'departement': medecin.departement.nom_depart if medecin.departement else None
-            })
+        debug_info = [{
+            'id': m.id,
+            'nom': m.nom,
+            'specialite': m.specialite,
+            'departement_id': m.departement_id,
+            'departement': m.departement.nom_depart if m.departement else None
+        } for m in medecins]
         return jsonify(debug_info), 200
     except Exception as e:
         logger.error(f"Erreur lors du débogage des médecins: {str(e)}")
