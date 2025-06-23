@@ -11,7 +11,7 @@ chatbot_bp = Blueprint('chatbot', __name__)
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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"
+    api_key="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"
 )
 
 @chatbot_bp.route('/chatbot', methods=['POST'])
