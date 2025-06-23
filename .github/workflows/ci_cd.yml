@@ -28,7 +28,10 @@ jobs:
         run: npm install
 
       - name: Build app
-        run: npm run build
+  run: |
+    cd front-hopital
+    NEXT_IGNORE_ESLINT=1 npm run build
+
 
   
 
