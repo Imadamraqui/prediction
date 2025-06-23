@@ -8,7 +8,6 @@ on:
 
 jobs:
   qualite-du-code:
-    name: Analyse Code avec SonarQube
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +18,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '17'  # ✅ Correction ici
 
       - name: Install SonarQube Scanner
         run: |
@@ -35,5 +34,4 @@ jobs:
             -Dsonar.projectKey=DevOps-Pr-diction-IA \
             -Dsonar.sources=. \
             -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -X
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
