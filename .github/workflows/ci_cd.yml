@@ -29,7 +29,7 @@ jobs:
           npm install -g sonar-scanner
           sonar-scanner \
             -Dsonar.projectKey=DevOps-Pr-diction-IA \
-            -Dsonar.organization=oulalisamya \
+            -Dsonar.organization=devops-team-ump \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=${SONAR_TOKEN} \
             -Dsonar.branch.name=main
