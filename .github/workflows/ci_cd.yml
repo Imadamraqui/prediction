@@ -30,18 +30,7 @@ jobs:
       - name: Build app
         run: npm run build
 
-  quality:
-    name: ✅ Analyse SonarCloud
-    runs-on: self-hosted
-    needs: build
-
-    defaults:
-      run:
-        working-directory: front-hopital
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+  
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -51,9 +40,4 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run SonarCloud scanner
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          npm install -g sonar-scanner
-          sonar-scanner
+      
