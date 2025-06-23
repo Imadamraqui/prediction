@@ -7,29 +7,59 @@ on:
     branches: [ main ]
 
 jobs:
-  quality:
-    name: Analyse SonarCloud
+  build:
+    name: 🔧 Build Frontend (Next.js)
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          cd front-hopital
+          npm install
+
+      - name: Build app
+        run: |
+          cd front-hopital
+          npm run build
+
+  quality:
+    name: ✅ Analyse SonarCloud
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: '17'
 
-      - name: Installer les dépendances (si nécessaire)
+      - name: Install dependencies
         run: |
-          npm install --legacy-peer-deps
+          cd front-hopital
+          npm install
 
-      - name: Lancer l'analyse avec SonarCloud
+      - name: Run SonarCloud scanner
+        working-directory: ./front-hopital
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           npm install -g sonar-scanner
+          sonar-scanner
+
+          run: |
+          npm install -g sonar-scanner
           sonar-scanner \
-            -Dsonar.projectKey=DevOps-Pr-diction-IA \
-            -Dsonar.organization=devops-team-ump \
+            -Dsonar.projectKey=OulaliSamya_DevOps-Pr-diction-IA \
+            -Dsonar.organization=OulaliSamya \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=${SONAR_TOKEN} \
             -Dsonar.branch.name=main
