@@ -5,6 +5,7 @@ from app import db
 from fpdf import FPDF
 from datetime import datetime
 import io
+from flask_cors import cross_origin
 
 historique_pdf_bp = Blueprint("historique_pdf", __name__)
 
