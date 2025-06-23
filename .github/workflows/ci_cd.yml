@@ -27,20 +27,5 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build app
-  run: |
-    cd front-hopital
-    NEXT_IGNORE_ESLINT=1 npm run build
-
-
-  
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install
-
-      
+      - name: Build app (ESLint temporairement désactivé)
+        run: NEXT_IGNORE_ESLINT=1 npm run build
