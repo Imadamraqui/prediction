@@ -19,7 +19,7 @@ const navItems: NavItem[] = [
   { href: '/prediction', icon: Calendar, label: 'Prédiction' },
   { href: '/chatbot', icon: MessageCircle, label: 'Chatbot' },
   { href: '/profile', icon: UserCircle, label: 'Profil' },
-  { href: '/settings', icon: Settings, label: 'Paramètres' }, // Example additional item
+  //{ href: '/settings', icon: Settings, label: 'Paramètres' }, // Example additional item
 ];
 
 // Define props for the Sidebar component
