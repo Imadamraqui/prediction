@@ -24,19 +24,33 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) {
+      setLoading(false); // ❗ pour éviter de rester bloqué en chargement
+      return;
+    }
 
     Promise.all([
       fetch("http://localhost:5000/api/patient/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      }).then((res) => res.json()),
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }).then((res) => res.ok ? res.json() : Promise.reject()),
+
       fetch("http://localhost:5000/api/predictions/pdf-historique", {
-        headers: { Authorization: `Bearer ${token}` },
-      }).then((res) => res.json())
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }).then((res) => res.ok ? res.json() : [])
     ])
       .then(([userData, predictionData]) => {
         setUser(userData);
         setPredictions(predictionData);
+      })
+      .catch(() => {
+        setUser(null);
+        setPredictions([]);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -74,12 +88,15 @@ export default function ProfilePage() {
             <button
               onClick={async () => {
                 const token = localStorage.getItem("token");
+                if (!token) return;
+
                 const res = await fetch("http://localhost:5000/api/pdf-gen", {
                   method: "GET",
                   headers: {
                     Authorization: `Bearer ${token}`,
                   },
                 });
+
                 const blob = await res.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement("a");

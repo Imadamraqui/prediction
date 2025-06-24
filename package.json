@@ -2,5 +2,12 @@
   "dependencies": {
     "@radix-ui/react-tooltip": "^1.2.7",
     "react-markdown": "^10.1.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.2",
+    "ts-jest": "^29.4.0"
   }
 }

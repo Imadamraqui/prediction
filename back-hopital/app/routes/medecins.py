@@ -1,9 +1,11 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_file
 from app.models.medecin import Medecin
 from app.models.departement import Departement
 from flask_cors import cross_origin
 from app import db
 import logging
+from io import BytesIO
+from fpdf import FPDF
 
 logger = logging.getLogger(__name__)
 medecins_bp = Blueprint('medecins', __name__)
