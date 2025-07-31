@@ -17,7 +17,7 @@ export default function MedecinCard({ medecin }: { medecin: Medecin }) {
       <CardHeader>
         <div className="w-32 h-32 mx-auto mb-4 relative">
           <Image 
-            src={medecin.photo_url || '/default-doctor.png'} 
+            src={(medecin.photo_url || '/default-doctor.png').trim()} 
             alt={medecin.nom}
             fill
             className="object-cover rounded-full"

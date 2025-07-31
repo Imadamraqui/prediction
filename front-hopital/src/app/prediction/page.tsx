@@ -267,43 +267,59 @@ export default function PredictionPage() {
               </div>
 
               {result.medecins_and_departement && (
-                <>
-                  <div className="border-t pt-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Département Recommandé :
-                    </h3>
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <h4 className="text-xl font-medium text-blue-800 mb-2">
-                        {result.medecins_and_departement.departement.nom_depart}
-                      </h4>
-                      <p className="text-gray-600">
-                        {result.medecins_and_departement.departement.description}
-                      </p>
-                    </div>
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Département Recommandé :
+                  </h3>
+                  <div
+                    className="bg-blue-50 p-4 rounded-lg cursor-pointer hover:bg-blue-100 transition"
+                    onClick={() => window.location.href = `/departements/${result.medecins_and_departement.departement.id}`}
+                  >
+                    <h4 className="text-xl font-medium text-blue-800 mb-2">
+                      {result.medecins_and_departement.departement.nom_depart}
+                    </h4>
+                    <p className="text-gray-600">
+                      {result.medecins_and_departement.departement.description}
+                    </p>
                   </div>
+                </div>
+              )}
 
-                  <div className="border-t pt-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Médecins Spécialistes Recommandés :
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {result.medecins_and_departement.medecins.map((medecin) => (
-                        <div key={medecin.id} className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                          <div className="flex flex-col items-center text-center">
-                            <img
-                              src={medecin.photo_url}
-                              alt={medecin.nom}
-                              className="w-24 h-24 rounded-full object-cover mb-3 border-2 border-blue-100"
-                            />
-                            <h4 className="font-medium text-gray-900">{medecin.nom}</h4>
-                            <p className="text-sm text-blue-600">{medecin.grade}</p>
-                            <p className="text-sm text-gray-500 mt-1">{medecin.specialite}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </>
+              {result && (
+                <button
+                  className="mt-6 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+                  onClick={async () => {
+                    const token = localStorage.getItem('token');
+                    const res = await fetch('http://localhost:5000/api/prediction/download-pdf', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                      },
+                      body: JSON.stringify({
+                        prediction: result.prediction,
+                        departement: result.medecins_and_departement?.departement?.nom_depart,
+                        date_prediction: new Date().toLocaleString(),
+                        recommendations: result.recommendations
+                      })
+                    });
+                    if (res.ok) {
+                      const blob = await res.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'rapport_prediction.pdf';
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                      window.URL.revokeObjectURL(url);
+                    } else {
+                      alert("Erreur lors du téléchargement du PDF");
+                    }
+                  }}
+                >
+                  Télécharger le PDF du rapport
+                </button>
               )}
             </div>
           )}

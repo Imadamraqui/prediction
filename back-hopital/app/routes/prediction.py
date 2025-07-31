@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_file
 from werkzeug.utils import secure_filename
 import pandas as pd
 import pickle
@@ -11,6 +11,8 @@ from app.models.database import get_db_connection
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import json
 import logging
+import io
+from fpdf import FPDF
 
 logger = logging.getLogger(__name__)
 prediction_bp = Blueprint('prediction', __name__)
@@ -310,3 +312,87 @@ def save_prediction():
     except Exception as e:
         logger.error(f"Erreur lors de la sauvegarde de la prédiction: {str(e)}", exc_info=True)
         return jsonify({'error': str(e)}), 500
+
+@prediction_bp.route('/download-pdf', methods=['POST'])
+@jwt_required()
+def download_prediction_pdf():
+    data = request.get_json()
+    user_id = get_jwt_identity()
+
+    # Récupérer les infos utilisateur
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT nom, email, date_naissance FROM patients WHERE id = %s", (user_id,))
+    user = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not user:
+        return jsonify({'error': 'Utilisateur non trouvé'}), 404
+
+    # Récupérer les infos de prédiction depuis le POST
+    prediction = data.get('prediction')
+    departement = data.get('departement')
+    date_prediction = data.get('date_prediction')
+    recommendations = data.get('recommendations', [])
+
+    # Générer le PDF amélioré
+    pdf = FPDF()
+    pdf.add_page()
+
+    # Fond bleu clair
+    pdf.set_fill_color(230, 240, 255)
+    pdf.rect(0, 0, 210, 297, 'F')
+
+    # Titre principal
+    pdf.set_font("Arial", "B", 20)
+    pdf.set_text_color(30, 60, 150)
+    pdf.cell(0, 18, "Rapport de Prédiction Médicale", ln=True, align="C")
+
+    pdf.ln(4)
+    pdf.set_font("Arial", "", 12)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0, 10, f"Nom : {user['nom']}", ln=True)
+    pdf.cell(0, 10, f"Email : {user['email']}", ln=True)
+    pdf.cell(0, 10, f"Date de naissance : {user['date_naissance']}", ln=True)
+    pdf.cell(0, 10, f"Date de prédiction : {date_prediction}", ln=True)
+
+    # Encadré résultat
+    pdf.ln(2)
+    pdf.set_fill_color(200, 230, 201)  # vert très clair
+    pdf.set_draw_color(56, 142, 60)    # vert foncé
+    pdf.set_line_width(0.8)
+    pdf.set_font("Arial", "B", 14)
+    pdf.set_text_color(56, 142, 60)
+    pdf.cell(0, 12, "Résultat de prédiction", ln=True, align="C")
+    pdf.set_font("Arial", "", 13)
+    pdf.set_text_color(0, 0, 0)
+    y = pdf.get_y()
+    pdf.set_xy(20, y)
+    pdf.cell(170, 14, f"{prediction}", border=1, ln=True, align="C", fill=True)
+
+    pdf.ln(6)
+    pdf.set_font("Arial", "B", 13)
+    pdf.set_text_color(30, 60, 150)
+    pdf.cell(0, 10, "Département recommandé :", ln=True)
+    pdf.set_font("Arial", "", 12)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0, 10, f"{departement}", ln=True)
+
+    if recommendations:
+        pdf.ln(4)
+        pdf.set_font("Arial", "B", 13)
+        pdf.set_text_color(30, 60, 150)
+        pdf.cell(0, 10, "Conseils personnalisés :", ln=True)
+        pdf.set_font("Arial", "", 12)
+        pdf.set_text_color(33, 33, 33)
+        for idx, rec in enumerate(recommendations, 1):
+            pdf.multi_cell(0, 8, f"Conseil n°{idx} : {rec}", border=0)
+
+    pdf_bytes = pdf.output(dest='S').encode('latin1')
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name='rapport_prediction.pdf'
+    )

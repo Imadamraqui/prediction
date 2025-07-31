@@ -18,7 +18,6 @@ const navItems: NavItem[] = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
   { href: '/prediction', icon: Calendar, label: 'Prédiction' },
   { href: '/chatbot', icon: MessageCircle, label: 'Chatbot' },
-  { href: '/profile', icon: UserCircle, label: 'Profil' },
   //{ href: '/settings', icon: Settings, label: 'Paramètres' }, // Example additional item
 ];
 

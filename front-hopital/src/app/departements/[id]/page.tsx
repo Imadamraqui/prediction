@@ -70,7 +70,7 @@ export default function DepartementDetailPage() {
               className="bg-white p-4 rounded-lg shadow hover:shadow-md transition block"
             >
               <img
-                src={m.photo_url || "/placeholder-doctor.jpg"}
+                src={(m.photo_url || "/placeholder-doctor.jpg").trim()}
                 alt={m.nom}
                 className="w-full h-40 object-cover rounded mb-4"
               />

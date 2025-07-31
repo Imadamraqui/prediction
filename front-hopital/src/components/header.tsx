@@ -54,51 +54,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
         </div>
 
         {/* Right Section: Navigation and User Actions */}
-        <div className="flex items-center gap-4">
-          {/* Placeholder for potential main navigation links */}
-          {/* <nav className="hidden md:flex gap-4">
-            <Link href="/features" className="text-gray-600 hover:text-blue-600 transition-colors">Fonctionnalités</Link>
-            <Link href="/pricing" className="text-gray-600 hover:text-blue-600 transition-colors">Tarifs</Link>
-          </nav> */}
-
-          {/* Notifications Icon */}
-          {isAuthenticated && (
-            <button className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              <Bell size={20} />
-              <span className="sr-only">Notifications</span>
-            </button>
-          )}
-
-          {/* User Profile/Login/Logout */}
-          {isAuthenticated ? (
-            <div className="flex items-center gap-3">
-              <Link href="/profile" className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                <UserCircle size={22} />
-                <span className="sr-only">Profil</span>
-              </Link>
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-                className="border-red-500 text-red-500 hover:bg-red-50 transition-colors duration-200"
-              >
-                <LogOut size={16} className="mr-1.5"/>
-                Déconnexion
-              </Button>
-            </div>
-          ) : (
-            <Button 
-              asChild 
-              size="sm"
-              className="bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200"
-            >
-              <Link href="/auth/login">
-                <LogIn size={16} className="mr-1.5"/>
-                Connexion
-              </Link>
-            </Button>
-          )}
-        </div>
+        
       </div>
     </header>
   );

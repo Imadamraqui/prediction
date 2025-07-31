@@ -35,15 +35,13 @@ export default function HomePage() {
     {
       title: "Bienvenue à l'Hôpital Digital",
       description: "Des soins de qualité pour votre santé, avec une équipe médicale professionnelle à votre service.",
-      buttons: [{ text: "S'inscrire", onClick: () => router.push('/auth/signup'), className: "bg-white text-blue-700 hover:bg-gray-200" }],
-      bgImage: "/images/hero-1.jpg"
+      bgImage: "/images/hero-1.avif"
     },
     {
       title: "Prédiction de Santé Intelligente",
       description: "Utilisez notre système d'IA pour analyser vos données de santé et obtenir des prédictions personnalisées.",
       buttons: [
-        { text: "Faire une prédiction", onClick: () => router.push('/prediction'), className: "bg-blue-700 text-white hover:bg-blue-800" },
-        { text: "En savoir plus", onClick: () => router.push('/prediction/about'), className: "border border-white text-white hover:bg-white hover:text-blue-700" }
+        { text: "Faire une prédiction", onClick: () => router.push('/prediction'), className: "bg-blue-700 text-white hover:bg-blue-800" }
       ],
       bgImage: "/images/heroPredict.png"
     },
@@ -51,8 +49,7 @@ export default function HomePage() {
       title: "Assistant Virtuel 24/7",
       description: "Notre chatbot médical est disponible à tout moment pour répondre à vos questions de santé.",
       buttons: [
-        { text: "Discuter maintenant", onClick: () => router.push('/chatbot'), className: "bg-white text-blue-700 hover:bg-gray-100" },
-        { text: "Découvrir les fonctionnalités", onClick: () => router.push('/chatbot/features'), className: "border border-white text-white hover:bg-white hover:text-blue-700" }
+        { text: "Discuter maintenant", onClick: () => router.push('/chatbot'), className: "bg-white text-blue-700 hover:bg-gray-100" }
       ],
       bgImage: "/images/heroChat.png"
     }
@@ -129,11 +126,13 @@ export default function HomePage() {
             <div className="h-full w-full flex flex-col justify-center items-start px-8 md:px-24 text-white">
               <h2 className="text-5xl font-bold mb-4 animate-fade-in-up drop-shadow-xl">{hero.title}</h2>
               <p className="text-xl max-w-2xl mb-6 animate-fade-in-up drop-shadow-md">{hero.description}</p>
-              <div className="flex gap-4 animate-fade-in-up">
-                {hero.buttons.map((btn, i) => (
-                  <Button key={i} onClick={btn.onClick} className={`${btn.className} px-6 py-2 rounded-lg`}>{btn.text}</Button>
-                ))}
-              </div>
+              {hero.buttons && hero.buttons.length > 0 && (
+                <div className="flex gap-4 animate-fade-in-up">
+                  {hero.buttons.map((btn, i) => (
+                    <Button key={i} onClick={btn.onClick} className={`${btn.className} px-6 py-2 rounded-lg`}>{btn.text}</Button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -151,7 +150,7 @@ export default function HomePage() {
             {medecins.slice(0, 3).map((medecin, idx) => (
               <div key={medecin.id} className="fade-in opacity-0 translate-y-10 transition-all duration-700 bg-white rounded-xl shadow-md p-6">
                 <div className="flex flex-col items-center">
-                  <Image src={medecin.photo_url || '/images/default-avatar.png'} width={90} height={90} className="rounded-full mb-4" alt={medecin.nom} />
+                  <Image src={(medecin.photo_url || '/images/default-avatar.png').trim()} width={90} height={90} className="rounded-full mb-4" alt={medecin.nom} />
                   <h3 className="text-xl font-semibold text-blue-700">{medecin.nom}</h3>
                   <p className="text-blue-500 text-sm mb-4">{medecin.grade}</p>
                   <Button onClick={() => router.push(`/auth/medecins/${medecin.id}`)} className="bg-blue-600 text-white hover:bg-blue-700 mt-2 px-4 py-2 rounded">Voir le profil</Button>
@@ -161,7 +160,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       <section className="py-16 bg-gradient-to-b from-blue-50 to-white">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-10 text-purple-700">Nos Départements</h2>
