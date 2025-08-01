@@ -10,26 +10,25 @@ type Message = {
 };
 
 export default function Chatbot() {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const formatBotResponse = (content: string) => {
+  // Function to format the bot's response
+  const formatBotResponse = (content: string): string => {
     try {
-      // Essayer de parser le contenu comme du JSON
       const jsonContent = JSON.parse(content);
-      
-      // Si c'est un objet avec une propriété summary
+      let formattedResponse = "";
+
+      // Check if the content has a summary
       if (jsonContent.summary) {
-        let formattedResponse = "";
-        
-        // Ajouter le titre
+        // Add title if available
         if (jsonContent.summary.title) {
           formattedResponse += `## ${jsonContent.summary.title}\n\n`;
         }
-        
-        // Ajouter les user stories
+
+        // Add user stories if available
         if (jsonContent.summary.userStories) {
           formattedResponse += "### User Stories\n\n";
           jsonContent.summary.userStories.forEach((story: string) => {
@@ -37,30 +36,27 @@ export default function Chatbot() {
           });
           formattedResponse += "\n";
         }
-        
-        // Ajouter les étapes
+
+        // Add steps if available
         if (jsonContent.summary.steps) {
           formattedResponse += "### Étapes\n\n";
           jsonContent.summary.steps.forEach((step: string, index: number) => {
             formattedResponse += `${index + 1}. ${step}\n`;
           });
         }
-        
         return formattedResponse;
       }
-      
-      // Si ce n'est pas un objet summary, retourner le JSON formaté
       return JSON.stringify(jsonContent, null, 2);
     } catch (e) {
-      // Si ce n'est pas du JSON, retourner le contenu tel quel
-      return content;
+      return content; // Return original content if parsing fails
     }
   };
 
+  // Function to send a message
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const userMessage = { role: "user" as const, content: input };
+    const userMessage: Message = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
@@ -73,7 +69,6 @@ export default function Chatbot() {
       });
 
       const data = await res.json();
-      
       if (!res.ok) {
         throw new Error(data.details || data.error || "Une erreur est survenue");
       }
@@ -96,6 +91,7 @@ export default function Chatbot() {
     }
   };
 
+  // Effect to scroll to the bottom of the chat container
   useEffect(() => {
     chatContainerRef.current?.scrollTo({
       top: chatContainerRef.current.scrollHeight,
@@ -119,38 +115,51 @@ export default function Chatbot() {
             {messages.map((msg, i) => (
               <div
                 key={i}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex items-end gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                <div
-                  className={`p-4 rounded-2xl shadow-md max-w-[80%] ${
-                    msg.role === "user"
-                      ? "bg-green-500 text-white"
-                      : "bg-white text-gray-800 border border-gray-200"
-                  }`}
-                >
-                  <ReactMarkdown
-                    components={{
-                      code: ({ className, children, ...props }: any) => {
-                        const match = /language-(\w+)/.exec(className || '');
-                        return match ? (
-                          <SyntaxHighlighter
-                            style={vscDarkPlus as any}
-                            language={match[1]}
-                            PreTag="div"
-                            {...props}
-                          >
-                            {String(children).replace(/\n$/, '')}
-                          </SyntaxHighlighter>
-                        ) : (
-                          <code className={className} {...props}>
-                            {children}
-                          </code>
-                        );
-                      }
-                    }}
+                {msg.role === "bot" && (
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-green-600">
+                      <path d="M5.507 4.048A3 3 0 017.785 3h8.43a3 3 0 012.278 1.048l1.722 2.008A4.533 4.533 0 0019.5 6h-15c-.243 0-.482.02-.715.056l1.722-2.008z" />
+                      <path fillRule="evenodd" d="M1.5 10.5a3 3 0 013-3h15a3 3 0 110 6h-15a3 3 0 01-3-3zm15 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm2.25.75a.75.75 0 100-1.5.75.75 0 000 1.5zM4.5 15a3 3 0 100 6h15a3 3 0 100-6h-15zm11.25 3.75a.75.75 0 100-1.5.75.75 0 000 1.5zM19.5 18a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+                <div className="flex flex-col max-w-[80%]">
+                  <div className="text-xs text-gray-500 mb-1">
+                    {msg.role === "user" ? "Vous" : "Assistant"} • {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                  <div
+                    className={`p-4 rounded-2xl shadow-md ${
+                      msg.role === "user"
+                        ? "bg-green-500 text-white"
+                        : "bg-white text-gray-800 border border-gray-200"
+                    }`}
                   >
-                    {msg.content}
-                  </ReactMarkdown>
+                    <ReactMarkdown
+                      components={{
+                        code: ({ className, children, ...props }: any) => {
+                          const match = /language-(\w+)/.exec(className || '');
+                          return match ? (
+                            <SyntaxHighlighter
+                              style={vscDarkPlus as any}
+                              language={match[1]}
+                              PreTag="div"
+                              {...props}
+                            >
+                              {String(children).replace(/\n$/, '')}
+                            </SyntaxHighlighter>
+                          ) : (
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          );
+                        }
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               </div>
             ))}

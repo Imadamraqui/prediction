@@ -43,21 +43,35 @@ export default function DepartementDetailPage() {
   }, [id]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-blue-800">
-          {departement?.nom_depart ?? "Département"}
-        </h1>
-        <Button variant="outline" onClick={() => router.push("/departements")}>
-          ⬅ Retour aux départements
-        </Button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-r from-blue-500 to-blue-700 py-20 px-6 text-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                {departement?.nom_depart ?? "Département"}
+              </h1>
+              {departement?.description && (
+                <p className="text-xl text-blue-100 max-w-2xl">
+                  {departement.description}
+                </p>
+              )}
+            </div>
+            <Button 
+              variant="outline" 
+              className="bg-white/10 hover:bg-white/20 border-white/30 text-white"
+              onClick={() => router.push("/departements")}
+            >
+              ⬅ Retour aux départements
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {departement?.description && (
-        <p className="mb-6 text-gray-700">{departement.description}</p>
-      )}
-
-      {loading ? (
+      {/* Content Section */}
+      <div className="max-w-6xl mx-auto py-12 px-6">
+        {loading ? (
         <p className="text-gray-500">Chargement...</p>
       ) : medecins.length === 0 ? (
         <p className="text-red-500">Aucun médecin dans ce département.</p>
@@ -67,21 +81,35 @@ export default function DepartementDetailPage() {
             <Link
               key={m.id}
               href={`/auth/medecins/${m.id}`}
-              className="bg-white p-4 rounded-lg shadow hover:shadow-md transition block"
+              className="group bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 block"
             >
-              <img
-                src={(m.photo_url || "/placeholder-doctor.jpg").trim()}
-                alt={m.nom}
-                className="w-full h-40 object-cover rounded mb-4"
-              />
-              <h2 className="text-lg font-bold text-gray-800">{m.nom}</h2>
-              <p className="text-sm text-gray-600">{m.specialite}</p>
-              <p className="text-sm text-gray-500">{m.email}</p>
-              <p className="text-sm text-blue-600 mt-1">{m.grade}</p>
+              <div className="overflow-hidden rounded-lg mb-4">
+                <img
+                  src={(m.photo_url || "/placeholder-doctor.jpg").trim()}
+                  alt={m.nom}
+                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                  {m.nom}
+                </h2>
+                <p className="text-blue-600 font-medium">{m.specialite}</p>
+                <div className="flex items-center text-gray-500 text-sm">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  {m.email}
+                </div>
+                <p className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full inline-block">
+                  {m.grade}
+                </p>
+              </div>
             </Link>
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }
